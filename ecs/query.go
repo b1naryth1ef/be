@@ -11,7 +11,7 @@ import (
 	"github.com/viant/xunsafe"
 )
 
-/// Query which returns all entities in the simulation
+// Query which returns all entities in the simulation
 type AllEntities struct {
 	Id EntityId
 }
@@ -21,7 +21,7 @@ type QueryComponent struct {
 	Type  reflect.Type
 }
 
-/// Query abstracts away fetching entities based on their archetype.
+// Query abstracts away fetching entities based on their archetype.
 type Query[T any] struct {
 	queryComponents []reflect.Type
 	components      []reflect.Type
@@ -29,8 +29,7 @@ type Query[T any] struct {
 	entityId        *xunsafe.Field
 }
 
-/// Read a single entity from the given storage into a pointer towards the inner
-///  query type. This is useful for reading entities into archetypes.
+// Read a single entity from the given storage into a pointer towards the inner query type. This is useful for reading entities into archetypes.
 func (q *Query[T]) Read(storage EntityStorage, id EntityId, target unsafe.Pointer) {
 	if q.entityId != nil {
 		q.entityId.SetUint32(target, id)
@@ -135,11 +134,10 @@ type QueryResultIterator[T any] struct {
 	index   uint32
 }
 
-/// Sorts the underlying entity index for this query, ensuring entities are iterated
-///  in ascending order by id
+// Sorts the underlying entity index for this query, ensuring entities are iterated in ascending order by id
 func (q *QueryResultIterator[T]) Sort() {
-	container.GSlice[uint32](q.ids).Sort(func(a EntityId, b EntityId) bool {
-		return genfuncs.LessThanOrdered(a, b)
+	container.GSlice[uint32](q.ids).SortBy(func(a EntityId, b EntityId) bool {
+		return genfuncs.OrderedLessThan(a)(b)
 	})
 }
 

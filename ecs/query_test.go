@@ -38,6 +38,25 @@ func TestQueryToList(t *testing.T) {
 		assert.Equal(t, item.Id, EntityId(item.A.A))
 	}
 }
+func TestQueryFirst(t *testing.T) {
+	sim := NewSimpleSimulation()
+	sim.AddEntity(&componentA{
+		A: float64(1),
+	})
+	sim.AddEntity(&componentA{
+		A: float64(2),
+	})
+
+	query := NewQuery[struct {
+		Id EntityId
+		A  *componentA
+	}]()
+	iter := query.Execute(sim)
+
+	item, ok := iter.First()
+	assert.True(t, ok)
+	assert.Equal(t, item.A.A, float64(1))
+}
 
 func TestQueryOptionalField(t *testing.T) {
 	sim := NewSimpleSimulation()

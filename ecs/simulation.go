@@ -29,14 +29,21 @@ type Simulation struct {
 }
 
 func NewSimulation(storage EntityStorage, executor SystemExecutor) *Simulation {
-	return &Simulation{
+	sim := &Simulation{
 		Storage:  storage,
 		Executor: executor,
 		id:       1,
 	}
+	sim.Frame = &SimulationFrame{
+		Sim:           sim,
+		Delta:         0,
+		LastFrameTime: 0,
+		Data:          map[string]interface{}{},
+	}
+	return sim
 }
 
-/// NewSimpleSimulation creates a new simulation with simple defaults
+// NewSimpleSimulation creates a new simulation with simple defaults
 func NewSimpleSimulation() *Simulation {
 	return &Simulation{
 		Storage:  NewEntitySimpleStorage(),
@@ -85,17 +92,6 @@ func (s *Simulation) Setup() error {
 }
 
 func (s *Simulation) Update() {
-	if s.Frame == nil {
-		s.Frame = &SimulationFrame{
-			Sim:           s,
-			Delta:         0,
-			LastFrameTime: 0,
-			Data:          map[string]interface{}{},
-		}
-	}
-
-	// todo: cache simulation frame, calculate delta, etc
-	// todo: simulation frame should store deferred mutations too
 	s.Executor.Update(s.Frame)
 }
 

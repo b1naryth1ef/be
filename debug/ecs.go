@@ -100,8 +100,8 @@ func (d *ECSDebugSystem) renderOpenEntities(sim *ecs.Simulation) {
 			delete(d.openEntityWindows, entityId)
 		}
 
-		container.GSlice[interface{}](components).Sort(func(a interface{}, b interface{}) bool {
-			return genfuncs.LessThanOrdered(reflect.TypeOf(a).Elem().Name(), reflect.TypeOf(b).Elem().Name())
+		container.GSlice[interface{}](components).SortBy(func(a interface{}, b interface{}) bool {
+			return genfuncs.OrderedLessThan(reflect.TypeOf(a).Elem().Name())(reflect.TypeOf(b).Elem().Name())
 		})
 
 		for _, componentData := range components {

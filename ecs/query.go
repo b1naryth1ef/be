@@ -171,3 +171,13 @@ func (q *QueryResultIterator[T]) ToList() []T {
 
 	return result
 }
+
+func (q *QueryResultIterator[T]) First() (T, bool) {
+	var result T
+	if len(q.ids) == 0 {
+		return result, false
+	}
+	id := q.ids[0]
+	q.query.Read(q.storage, id, unsafe.Pointer(&result))
+	return result, true
+}

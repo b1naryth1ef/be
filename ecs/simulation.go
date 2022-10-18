@@ -16,6 +16,11 @@ func WithFrameData[T any](frame *SimulationFrame, name string) T {
 	return frame.Data[name].(T)
 }
 
+func WithSingleton[T any](sim *Simulation) T {
+	var t T
+	return sim.Singleton(t).(T)
+}
+
 func (s *SimulationFrame) Set(key string, value interface{}) {
 	s.Data[key] = value
 }
@@ -72,6 +77,17 @@ func (s *Simulation) GetComponent(id EntityId, component interface{}) bool {
 	return true
 }
 
+func (s *Simulation) GetComponentRef(id EntityId, component interface{}) bool {
+	result := s.Storage.GetComponent(id, reflect.TypeOf(component).Elem())
+	if result == nil {
+		return false
+	}
+
+	reflect.ValueOf(component).Elem().Set(reflect.ValueOf(result))
+	return true
+
+}
+
 func (s *Simulation) RemoveComponent(id EntityId, component interface{}) {
 	componentType := reflect.TypeOf(component)
 	if componentType.Kind() == reflect.Struct {
@@ -85,6 +101,11 @@ func (s *Simulation) RemoveComponent(id EntityId, component interface{}) {
 
 func (s *Simulation) AddComponent(id EntityId, component interface{}) {
 	s.Storage.AddComponent(id, component)
+}
+
+func (s *Simulation) Singleton(component interface{}) interface{} {
+	res, _ := s.Storage.FindOne(reflect.TypeOf(component))
+	return res
 }
 
 func (s *Simulation) Setup() error {

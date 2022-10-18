@@ -23,10 +23,11 @@ type QueryComponent struct {
 
 // Query abstracts away fetching entities based on their archetype.
 type Query[T any] struct {
-	queryComponents []reflect.Type
-	components      []reflect.Type
-	fields          []*xunsafe.Field
-	entityId        *xunsafe.Field
+	queryComponents  []reflect.Type
+	absentComponents []reflect.Type
+	components       []reflect.Type
+	fields           []*xunsafe.Field
+	entityId         *xunsafe.Field
 }
 
 // Read a single entity from the given storage into a pointer towards the inner query type. This is useful for reading entities into archetypes.
@@ -56,7 +57,7 @@ func (q *Query[T]) Execute(sim *Simulation) *QueryResultIterator[T] {
 
 func (q *Query[T]) ExecuteStorage(storage EntityStorage) *QueryResultIterator[T] {
 	res := &QueryResultIterator[T]{
-		ids:     storage.FindAll(q.queryComponents),
+		ids:     storage.FindAll(q.queryComponents, q.absentComponents),
 		index:   0,
 		storage: storage,
 		query:   q,
@@ -74,10 +75,11 @@ func NewQuery[T any]() *Query[T] {
 	}
 
 	result := &Query[T]{
-		components:      []reflect.Type{},
-		queryComponents: []reflect.Type{},
-		fields:          []*xunsafe.Field{},
-		entityId:        nil,
+		components:       []reflect.Type{},
+		queryComponents:  []reflect.Type{},
+		absentComponents: []reflect.Type{},
+		fields:           []*xunsafe.Field{},
+		entityId:         nil,
 	}
 
 	for fieldIdx := 0; fieldIdx < queryType.NumField(); fieldIdx++ {
@@ -87,6 +89,7 @@ func NewQuery[T any]() *Query[T] {
 		}
 
 		optional := false
+		absent := false
 		skipped := false
 
 		tags := strings.Split(field.Tag.Get("ecs"), ",")
@@ -96,6 +99,8 @@ func NewQuery[T any]() *Query[T] {
 				break
 			} else if tag == "optional" {
 				optional = true
+			} else if tag == "absent" {
+				absent = true
 			}
 		}
 
@@ -110,6 +115,11 @@ func NewQuery[T any]() *Query[T] {
 			}
 
 			result.entityId = xunsafe.FieldByIndex(queryType, fieldIdx)
+			continue
+		}
+
+		if absent {
+			result.absentComponents = append(result.absentComponents, field.Type)
 			continue
 		}
 

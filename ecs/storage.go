@@ -13,8 +13,8 @@ func init() {
 	entityIdType = reflect.TypeOf(empty)
 }
 
-/// EntityStorage manages storing, mutating, and querying a set of entities, described
-///  by their components.
+// / EntityStorage manages storing, mutating, and querying a set of entities, described
+// /  by their components.
 type EntityStorage interface {
 	Add(EntityId, ...interface{})
 	Delete(EntityId)
@@ -22,7 +22,8 @@ type EntityStorage interface {
 	GetComponent(EntityId, reflect.Type) interface{}
 	RemoveComponent(EntityId, reflect.Type)
 	AddComponent(EntityId, interface{})
-	FindAll([]reflect.Type) []EntityId
+	FindOne(reflect.Type) (interface{}, bool)
+	FindAll([]reflect.Type, []reflect.Type) []EntityId
 }
 
 type EntityIterator interface {

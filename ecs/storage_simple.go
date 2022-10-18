@@ -7,7 +7,7 @@ import (
 
 type componentMap = map[reflect.Type]interface{}
 
-/// EntitySimpleStorage stores entities within a id-keyed map.
+// / EntitySimpleStorage stores entities within a id-keyed map.
 type EntitySimpleStorage struct {
 	id   EntityId
 	data map[EntityId]componentMap
@@ -33,14 +33,29 @@ func (e *EntitySimpleStorage) Delete(id EntityId) {
 	delete(e.data, id)
 }
 
-func (e *EntitySimpleStorage) FindAll(componentTypes []reflect.Type) []EntityId {
+func (e *EntitySimpleStorage) FindOne(componentType reflect.Type) (interface{}, bool) {
+	for _, components := range e.data {
+		if data, exists := components[componentType]; exists {
+			return data, true
+		}
+	}
+	return nil, false
+}
+
+func (e *EntitySimpleStorage) FindAll(componentTypes []reflect.Type, absentComponentTypes []reflect.Type) []EntityId {
 	result := []EntityId{}
 	for entityId, components := range e.data {
 		matches := true
 		for _, componentType := range componentTypes {
 			if _, exists := components[componentType]; !exists {
 				matches = false
-				continue
+				break
+			}
+		}
+		for _, absentType := range absentComponentTypes {
+			if _, exists := components[absentType]; exists {
+				matches = false
+				break
 			}
 		}
 		if !matches {

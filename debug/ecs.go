@@ -119,7 +119,7 @@ func (d *ECSDebugSystem) renderOpenEntities(sim *ecs.Simulation) {
 }
 
 func (d *ECSDebugSystem) renderEntities(sim *ecs.Simulation) {
-	if imgui.BeginTableV("entities", 3, imgui.TableFlagsBorders, imgui.Vec2{}, 0.0) {
+	if imgui.BeginTableV("entities", 3, imgui.TableFlagsBorders|imgui.TableFlagsResizable, imgui.Vec2{}, 0.0) {
 		imgui.TableSetupColumn("ID")
 		imgui.TableSetupColumn("Name")
 		imgui.TableSetupColumn("Options")

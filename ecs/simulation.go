@@ -18,7 +18,11 @@ func WithFrameData[T any](frame *SimulationFrame, name string) T {
 
 func WithSingleton[T any](sim *Simulation) T {
 	var t T
-	return sim.Singleton(t).(T)
+	res := sim.Singleton(t)
+	if res == nil {
+		return t
+	}
+	return res.(T)
 }
 
 func (s *SimulationFrame) Set(key string, value interface{}) {
@@ -101,6 +105,12 @@ func (s *Simulation) RemoveComponent(id EntityId, component interface{}) {
 
 func (s *Simulation) AddComponent(id EntityId, component interface{}) {
 	s.Storage.AddComponent(id, component)
+}
+
+func (s *Simulation) AddComponents(id EntityId, components ...interface{}) {
+	for _, component := range components {
+		s.Storage.AddComponent(id, component)
+	}
 }
 
 func (s *Simulation) Singleton(component interface{}) interface{} {

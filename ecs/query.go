@@ -144,6 +144,10 @@ type QueryResultIterator[T any] struct {
 	index   uint32
 }
 
+func (q *QueryResultIterator[T]) Len() int {
+	return len(q.ids)
+}
+
 // Sorts the underlying entity index for this query, ensuring entities are iterated in ascending order by id
 func (q *QueryResultIterator[T]) Sort() {
 	container.GSlice[uint32](q.ids).SortBy(func(a EntityId, b EntityId) bool {

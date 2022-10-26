@@ -24,6 +24,7 @@ var entityWithNameQuery = ecs.NewQuery[entityWithName]()
 type ECSDebugSystem struct {
 	openEntityWindows map[ecs.EntityId]struct{}
 
+	selectedStage  *ecs.SystemStage
 	selectedSystem ecs.System
 }
 
@@ -61,16 +62,39 @@ func (d *ECSDebugSystem) renderDebugWindow(sim *ecs.Simulation) {
 }
 
 func (d *ECSDebugSystem) renderSystems(sim *ecs.Simulation) {
+	scheduler, ok := sim.Executor.(*ecs.SystemScheduler)
+	if !ok {
+		return
+	}
+
+	selectedStageName := ""
+	if d.selectedStage != nil {
+		selectedStageName = d.selectedStage.Label
+	}
+	if imgui.BeginCombo("Selected Stage", selectedStageName) {
+		stages := scheduler.Stages()
+		for _, stage := range stages {
+			if imgui.SelectableV(stage.Label, d.selectedStage == stage, 0, imgui.Vec2{X: 0, Y: 0}) {
+				d.selectedStage = stage
+				d.selectedSystem = nil
+			}
+		}
+		imgui.EndCombo()
+	}
+
+	if d.selectedStage == nil {
+		return
+	}
+
 	selectedSystemName := ""
 	if d.selectedSystem != nil {
 		selectedSystemName = reflect.TypeOf(d.selectedSystem).Elem().Name()
 	}
 	if imgui.BeginCombo("Selected System", selectedSystemName) {
-		systems := sim.Executor.All()
-		for _, system := range systems {
+		for _, system := range d.selectedStage.All() {
 			if imgui.SelectableV(
 				reflect.TypeOf(system).Elem().Name(),
-				d.selectedSystem != system,
+				d.selectedSystem == system,
 				0,
 				imgui.Vec2{X: 0, Y: 0},
 			) {

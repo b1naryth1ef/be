@@ -59,7 +59,7 @@ func NewSimulation(storage EntityStorage, executor SystemExecutor) *Simulation {
 func NewSimpleSimulation() *Simulation {
 	return &Simulation{
 		Storage:  NewEntitySimpleStorage(),
-		Executor: NewSequentialSystemExecutor(),
+		Executor: NewSystemScheduler(),
 	}
 }
 

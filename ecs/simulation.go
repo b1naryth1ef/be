@@ -6,6 +6,8 @@ import (
 )
 
 type SimulationFrame struct {
+	Frame         uint64
+	Tick          uint64
 	Sim           *Simulation
 	Delta         float64
 	LastFrameTime uint32
@@ -44,6 +46,7 @@ func NewSimulation(storage EntityStorage, executor SystemExecutor) *Simulation {
 		id:       1,
 	}
 	sim.Frame = &SimulationFrame{
+		Frame:         0,
 		Sim:           sim,
 		Delta:         0,
 		LastFrameTime: 0,
@@ -124,10 +127,12 @@ func (s *Simulation) Setup() error {
 
 func (s *Simulation) Update() {
 	s.Executor.Update(s.Frame)
+	s.Frame.Tick += 1
 }
 
 func (s *Simulation) Render() {
 	start := time.Now().UnixMicro()
 	s.Executor.Render(s.Frame)
 	s.Frame.LastFrameTime = uint32((time.Now().UnixMicro() - start))
+	s.Frame.Frame += 1
 }

@@ -35,10 +35,11 @@ func NewECSDebugSystem() *ECSDebugSystem {
 }
 
 func (d *ECSDebugSystem) Update(frame *ecs.SimulationFrame) {
-	d.renderDebugWindow(frame.Sim)
 }
 
-func (d *ECSDebugSystem) Render(frame *ecs.SimulationFrame) {}
+func (d *ECSDebugSystem) Render(frame *ecs.SimulationFrame) {
+	d.renderDebugWindow(frame.Sim)
+}
 
 func (d *ECSDebugSystem) renderDebugWindow(sim *ecs.Simulation) {
 	open := true
@@ -116,7 +117,7 @@ func (d *ECSDebugSystem) renderSystems(sim *ecs.Simulation) {
 func (d *ECSDebugSystem) renderOpenEntities(sim *ecs.Simulation) {
 	for entityId := range d.openEntityWindows {
 		open := true
-		// imgui.SetNextWindowSize(imgui.Vec2{})
+		// imgui.SetNextWindowSize(imgui.Vec2{X: 32, Y: 32})
 		imgui.BeginV(fmt.Sprintf("Entity %v Details", entityId), &open, 0)
 		components := sim.Storage.Get(entityId)
 

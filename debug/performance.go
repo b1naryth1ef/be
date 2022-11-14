@@ -44,6 +44,9 @@ func (d *PerformanceDebugSystem) PushFPS(fps float32) {
 }
 
 func (d *PerformanceDebugSystem) Update(frame *ecs.SimulationFrame) {
+}
+
+func (d *PerformanceDebugSystem) Render(frame *ecs.SimulationFrame) {
 	d.PushMetric("frametime", float32(frame.LastFrameTime))
 
 	open := false
@@ -71,7 +74,4 @@ func (d *PerformanceDebugSystem) Update(frame *ecs.SimulationFrame) {
 	}
 
 	imgui.End()
-}
-
-func (d *PerformanceDebugSystem) Render(frame *ecs.SimulationFrame) {
 }

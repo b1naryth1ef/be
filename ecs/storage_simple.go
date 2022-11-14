@@ -81,6 +81,11 @@ func (e *EntitySimpleStorage) Get(id EntityId) []interface{} {
 	return result
 }
 
+func (e *EntitySimpleStorage) Has(id EntityId) bool {
+	_, ok := e.data[id]
+	return ok
+}
+
 func (e *EntitySimpleStorage) GetComponentMap(id EntityId) componentMap {
 	return e.data[id]
 }

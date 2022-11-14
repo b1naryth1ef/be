@@ -19,20 +19,20 @@ type SystemExecutor interface {
 }
 
 type SystemStage struct {
-	Label   string
-	Enabled bool
+	Label     string
+	Enabled   bool
+	SubStages []*SystemStage
 
-	executors []SystemExecutor
-	updates   []System
-	setups    []SystemSetup
-	renders   []SystemRender
+	updates []System
+	setups  []SystemSetup
+	renders []SystemRender
 }
 
 func NewSystemStage(label string) *SystemStage {
 	return &SystemStage{
 		Label:     label,
 		Enabled:   true,
-		executors: make([]SystemExecutor, 0),
+		SubStages: make([]*SystemStage, 0),
 		updates:   make([]System, 0),
 		setups:    make([]SystemSetup, 0),
 		renders:   make([]SystemRender, 0),
@@ -43,8 +43,8 @@ func (s *SystemStage) All() []System {
 	return s.updates
 }
 
-func (s *SystemStage) AddSub(executors ...SystemExecutor) {
-	s.executors = append(s.executors, executors...)
+func (s *SystemStage) AddSubStage(stage *SystemStage) {
+	s.SubStages = append(s.SubStages, stage)
 }
 
 func (s *SystemStage) Add(systems ...System) {
@@ -60,8 +60,10 @@ func (s *SystemStage) Add(systems ...System) {
 }
 
 func (s *SystemStage) Update(frame *SimulationFrame) {
-	for _, sub := range s.executors {
-		sub.Update(frame)
+	for _, sub := range s.SubStages {
+		if sub.Enabled {
+			sub.Update(frame)
+		}
 	}
 	for _, system := range s.updates {
 		system.Update(frame)
@@ -69,8 +71,10 @@ func (s *SystemStage) Update(frame *SimulationFrame) {
 }
 
 func (s *SystemStage) Render(frame *SimulationFrame) {
-	for _, sub := range s.executors {
-		sub.Render(frame)
+	for _, sub := range s.SubStages {
+		if sub.Enabled {
+			sub.Render(frame)
+		}
 	}
 	for _, system := range s.renders {
 		system.Render(frame)
@@ -78,10 +82,12 @@ func (s *SystemStage) Render(frame *SimulationFrame) {
 }
 
 func (s *SystemStage) Setup(sim *Simulation) error {
-	for _, sub := range s.executors {
-		err := sub.Setup(sim)
-		if err != nil {
-			return err
+	for _, sub := range s.SubStages {
+		if sub.Enabled {
+			err := sub.Setup(sim)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	for _, system := range s.setups {

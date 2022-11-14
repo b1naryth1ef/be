@@ -16,6 +16,7 @@ func init() {
 // / EntityStorage manages storing, mutating, and querying a set of entities, described
 // /  by their components.
 type EntityStorage interface {
+	Has(EntityId) bool
 	Add(EntityId, ...interface{})
 	Delete(EntityId)
 	Get(EntityId) []interface{}

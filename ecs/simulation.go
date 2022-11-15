@@ -2,11 +2,14 @@ package ecs
 
 import (
 	"reflect"
+	"time"
 )
 
 type SimulationFrame struct {
 	Frame uint64
 	Tick  uint64
+	Time  time.Time
+	Delta uint64
 	Sim   *Simulation
 	Data  map[string]interface{}
 }
@@ -45,6 +48,7 @@ func NewSimulation(storage EntityStorage, executor SystemExecutor) *Simulation {
 	sim.Frame = &SimulationFrame{
 		Frame: 0,
 		Sim:   sim,
+		Time:  time.Now(),
 		Data:  map[string]interface{}{},
 	}
 	return sim
@@ -121,6 +125,9 @@ func (s *Simulation) Setup() error {
 }
 
 func (s *Simulation) Update() {
+	now := time.Now()
+	s.Frame.Delta = uint64(now.Sub(s.Frame.Time).Milliseconds())
+	s.Frame.Time = now
 	s.Executor.Update(s.Frame)
 	s.Frame.Tick += 1
 }

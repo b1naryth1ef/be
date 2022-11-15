@@ -2,16 +2,13 @@ package ecs
 
 import (
 	"reflect"
-	"time"
 )
 
 type SimulationFrame struct {
-	Frame         uint64
-	Tick          uint64
-	Sim           *Simulation
-	Delta         float64
-	LastFrameTime uint32
-	Data          map[string]interface{}
+	Frame uint64
+	Tick  uint64
+	Sim   *Simulation
+	Data  map[string]interface{}
 }
 
 func WithFrameData[T any](frame *SimulationFrame, name string) T {
@@ -46,11 +43,9 @@ func NewSimulation(storage EntityStorage, executor SystemExecutor) *Simulation {
 		id:       1,
 	}
 	sim.Frame = &SimulationFrame{
-		Frame:         0,
-		Sim:           sim,
-		Delta:         0,
-		LastFrameTime: 0,
-		Data:          map[string]interface{}{},
+		Frame: 0,
+		Sim:   sim,
+		Data:  map[string]interface{}{},
 	}
 	return sim
 }
@@ -131,8 +126,6 @@ func (s *Simulation) Update() {
 }
 
 func (s *Simulation) Render() {
-	start := time.Now().UnixMicro()
 	s.Executor.Render(s.Frame)
-	s.Frame.LastFrameTime = uint32((time.Now().UnixMicro() - start))
 	s.Frame.Frame += 1
 }

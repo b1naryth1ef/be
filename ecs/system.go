@@ -1,5 +1,9 @@
 package ecs
 
+import (
+	"time"
+)
+
 type System interface {
 	Update(*SimulationFrame)
 }
@@ -18,10 +22,30 @@ type SystemExecutor interface {
 	SystemRender
 }
 
+type SystemTimer struct {
+	value uint32
+	start time.Time
+}
+
+func (s *SystemTimer) Last() uint32 {
+	return s.value
+}
+
+func (s *SystemTimer) Start() {
+	s.start = time.Now()
+}
+
+func (s *SystemTimer) End() {
+	s.value = uint32(time.Now().Sub(s.start).Milliseconds())
+}
+
 type SystemStage struct {
 	Label     string
 	Enabled   bool
 	SubStages []*SystemStage
+
+	UpdateTimer *SystemTimer
+	RenderTimer *SystemTimer
 
 	updates []System
 	setups  []SystemSetup
@@ -30,12 +54,14 @@ type SystemStage struct {
 
 func NewSystemStage(label string) *SystemStage {
 	return &SystemStage{
-		Label:     label,
-		Enabled:   true,
-		SubStages: make([]*SystemStage, 0),
-		updates:   make([]System, 0),
-		setups:    make([]SystemSetup, 0),
-		renders:   make([]SystemRender, 0),
+		Label:       label,
+		Enabled:     true,
+		UpdateTimer: &SystemTimer{},
+		RenderTimer: &SystemTimer{},
+		SubStages:   make([]*SystemStage, 0),
+		updates:     make([]System, 0),
+		setups:      make([]SystemSetup, 0),
+		renders:     make([]SystemRender, 0),
 	}
 }
 
@@ -60,6 +86,9 @@ func (s *SystemStage) Add(systems ...System) {
 }
 
 func (s *SystemStage) Update(frame *SimulationFrame) {
+	if s.UpdateTimer != nil {
+		s.UpdateTimer.Start()
+	}
 	for _, sub := range s.SubStages {
 		if sub.Enabled {
 			sub.Update(frame)
@@ -68,9 +97,15 @@ func (s *SystemStage) Update(frame *SimulationFrame) {
 	for _, system := range s.updates {
 		system.Update(frame)
 	}
+	if s.UpdateTimer != nil {
+		s.UpdateTimer.End()
+	}
 }
 
 func (s *SystemStage) Render(frame *SimulationFrame) {
+	if s.RenderTimer != nil {
+		s.RenderTimer.Start()
+	}
 	for _, sub := range s.SubStages {
 		if sub.Enabled {
 			sub.Render(frame)
@@ -78,6 +113,9 @@ func (s *SystemStage) Render(frame *SimulationFrame) {
 	}
 	for _, system := range s.renders {
 		system.Render(frame)
+	}
+	if s.RenderTimer != nil {
+		s.RenderTimer.End()
 	}
 }
 

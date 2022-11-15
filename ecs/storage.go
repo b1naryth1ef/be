@@ -13,8 +13,7 @@ func init() {
 	entityIdType = reflect.TypeOf(empty)
 }
 
-// / EntityStorage manages storing, mutating, and querying a set of entities, described
-// /  by their components.
+// EntityStorage manages storing, mutating, and querying a set of entities, described by their components.
 type EntityStorage interface {
 	Has(EntityId) bool
 	Add(EntityId, ...interface{})

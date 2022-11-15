@@ -54,6 +54,15 @@ func (e *ECSDebugWindow) Render(sim *ecs.Simulation) {
 }
 
 func (e *ECSDebugWindow) renderSystemStage(sim *ecs.Simulation, stage *ecs.SystemStage) {
+	if stage.UpdateTimer != nil {
+		imgui.Text(fmt.Sprintf("U: %vms", stage.UpdateTimer.Last()))
+	}
+
+	if stage.RenderTimer != nil {
+		imgui.SameLine()
+		imgui.Text(fmt.Sprintf("R: %vms", stage.RenderTimer.Last()))
+	}
+
 	for _, subStage := range stage.SubStages {
 		if imgui.TreeNodeV(subStage.Label, imgui.TreeNodeFlagsFramed) {
 			e.renderSystemStage(sim, subStage)
@@ -142,7 +151,7 @@ func (e *ECSDebugEntityWindow) Render(sim *ecs.Simulation) {
 	components := sim.Storage.Get(e.Id)
 
 	if len(components) == 0 && !sim.Storage.Has(e.Id) {
-		imgui.PushStyleColor(imgui.StyleColorText, imgui.Vec4{255, 0, 0, 255})
+		imgui.PushStyleColor(imgui.StyleColorText, imgui.Vec4{X: 1, Y: 0, Z: 0, W: 1})
 		imgui.Text("Entity Deleted")
 		imgui.PopStyleColor()
 	}

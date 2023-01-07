@@ -72,14 +72,9 @@ func (e *ECSDebugWindow) renderSystemStage(sim *ecs.Simulation, stage *ecs.Syste
 
 	for _, system := range stage.All() {
 		systemName := reflect.TypeOf(system).Elem().Name()
-		if imgui.TreeNodeV(systemName, imgui.TreeNodeFlagsFramed) {
-			RenderStruct(system)
-
-			if d, ok := system.(Debugable); ok {
-				d.Debug()
-			}
-
-			imgui.TreePop()
+		err := RenderDebugValue(systemName, system)
+		if err != nil {
+			panic(err)
 		}
 	}
 }
@@ -162,11 +157,9 @@ func (e *ECSDebugEntityWindow) Render(sim *ecs.Simulation) {
 
 	for _, componentData := range components {
 		componentType := reflect.TypeOf(componentData).Elem()
-		if imgui.CollapsingHeaderV(componentType.Name(), imgui.TreeNodeFlagsDefaultOpen) {
-			RenderStruct(componentData)
-			if dbg, ok := componentData.(Debugable); ok {
-				dbg.Debug()
-			}
+		err := RenderDebugValue(componentType.Name(), componentData)
+		if err != nil {
+			panic(err)
 		}
 	}
 

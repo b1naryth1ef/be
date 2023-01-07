@@ -11,6 +11,15 @@ import (
 	"github.com/inkyblackness/imgui-go/v4"
 )
 
+type CustomEditableTypeHandler = func(label string, value reflect.Value)
+
+var customEditableTypeRegistry = map[reflect.Type]CustomEditableTypeHandler{}
+
+func RegisterCustomEditableType(value interface{}, handler CustomEditableTypeHandler) {
+	valueType := reflect.ValueOf(value).Type()
+	customEditableTypeRegistry[valueType] = handler
+}
+
 func getUnexportedField(field reflect.Value) reflect.Value {
 	return reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem()
 }
@@ -40,6 +49,12 @@ func isNumber(k reflect.Kind) bool {
 
 func renderEditable(name string, value reflect.Value) {
 	valueType := value.Type()
+
+	if handler, ok := customEditableTypeRegistry[valueType]; ok {
+		handler(name, value)
+		return
+	}
+
 	if valueType.Kind() == reflect.String || isNumber(valueType.Kind()) {
 		var contents = fmt.Sprintf("%v", value.Interface())
 		imgui.InputTextV(name, &contents, imgui.ImGuiInputTextFlagsCallbackEdit, func(data imgui.InputTextCallbackData) int32 {
@@ -70,6 +85,10 @@ func renderEditable(name string, value reflect.Value) {
 			value.SetBool(checked)
 		}
 	}
+}
+
+func renderEditableStruct(value reflect.Value) {
+	imgui.Text("Would render editable struct here...")
 }
 
 func RenderStruct(s interface{}) {

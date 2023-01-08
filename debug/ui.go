@@ -36,6 +36,11 @@ func renderDebugValue(label string, ptr reflect.Value, editable bool) error {
 	valueType := ptr.Type().Elem()
 	if valueType.Kind() == reflect.Struct {
 		if imgui.CollapsingHeaderV(label, imgui.TreeNodeFlagsFramed) {
+			if ptr.Type().Implements(debuggableType) {
+				dbg := ptr.Interface().(Debuggable)
+				dbg.Debug()
+			}
+
 			return renderDebugStructValue(ptr)
 		}
 	} else if valueType.Kind() == reflect.Bool {
@@ -155,6 +160,12 @@ func renderDebugBool(label string, ptr reflect.Value, editable bool) error {
 func getUnexportedFieldPtr(field reflect.Value) reflect.Value {
 	return reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr()))
 }
+
+type Debuggable interface {
+	Debug()
+}
+
+var debuggableType reflect.Type = reflect.TypeOf((*Debuggable)(nil)).Elem()
 
 func renderDebugStructValue(ptr reflect.Value) error {
 	structValue := ptr.Elem()

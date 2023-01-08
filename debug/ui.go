@@ -71,11 +71,7 @@ func renderDebugArray(label string, ptr reflect.Value, editable bool) error {
 	}
 
 	if imgui.InputTextV(label, &value, flags, nil) {
-		err := json.Unmarshal([]byte(value), ptr.Interface())
-		if err != nil {
-			return err
-		}
-
+		json.Unmarshal([]byte(value), ptr.Interface())
 	}
 
 	return nil
